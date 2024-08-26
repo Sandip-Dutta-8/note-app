@@ -56,7 +56,7 @@ const Signin = () => {
 
             <p className='text-sm mt-4 text-center'>
               Not register yet?{" "}
-              <Link to="/sign-up">Create an account</Link>
+              <Link to="/sign-up" className='text-blue-500 '>Create an account</Link>
             </p>
           </form>
         </div>
