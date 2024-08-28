@@ -35,7 +35,7 @@ app.post("/create-account", async (req, res) => {
 
     if(!email) return res.status(400).json({error: true, message: "Email is required"})
 
-    if(!password) return res.status(400).json({error: true, message: "Password name is required"})
+    if(!password) return res.status(400).json({error: true, message: "Password is required"})
 
     const isUser = await User.findOne({email: email});
 
@@ -63,6 +63,40 @@ app.post("/create-account", async (req, res) => {
     })
 })
 
+//login route
+app.post("/login", async (req, res) => {
+
+    const { email, password } = req.body;
+
+    if(!email) return res.status(400).json({error: true, message: "Email is required"})
+
+    if(!password) return res.status(400).json({error: true, message: "Password is required"})
+
+    const userInfo = await User.findOne({email: email});
+
+    if(!userInfo){
+        return res.status(400).json({error: true, message:"User is not exists"})
+    }
+
+    if(userInfo.email == email && userInfo.password == password ){
+        const user = { user: userInfo };
+        
+        const accessToken = jwt.sign({user}, process.env.ACCESS_TOKEN_SECRET, {
+            expiresIn: "3600m"
+        })
+
+        return res.json({
+            error: false,
+            accessToken,
+            message: "login successful"
+        })
+    }else{
+        return res.status(403).json({
+            error: true,
+            message: "Invalid Credentials"
+        })
+    }
+})
 
 app.listen(8000, () => {
     console.log('server running on port 8000!');
