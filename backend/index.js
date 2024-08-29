@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 import jwt from 'jsonwebtoken';
 import { authenticateToken } from './utilities.js'
 import User from './models/user.model.js';
+import Note from './models/note.model.js';
 
 dotenv.config();
 
@@ -51,9 +52,9 @@ app.post("/create-account", async (req, res) => {
 
     await user.save();
 
-    const accessToken = jwt.sign({user}, process.env.ACCESS_TOKEN_SECRET, {
+    const accessToken = jwt.sign({ user }, process.env.ACCESS_TOKEN_SECRET, {
         expiresIn: "3600m"
-    })
+    });
 
     return res.json({
         error: false,
@@ -81,9 +82,10 @@ app.post("/login", async (req, res) => {
     if(userInfo.email == email && userInfo.password == password ){
         const user = { user: userInfo };
         
-        const accessToken = jwt.sign({user}, process.env.ACCESS_TOKEN_SECRET, {
+        const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
             expiresIn: "3600m"
-        })
+        });
+
 
         return res.json({
             error: false,
@@ -97,6 +99,42 @@ app.post("/login", async (req, res) => {
         })
     }
 })
+
+//add note
+app.post("/add-note", authenticateToken, async (req, res) => {
+    // Check if req.user is set
+    if (!req.user) {
+        return res.status(401).json({ error: true, message: "Unauthorized, user not found" });
+    }
+
+    const { title, content, tags } = req.body;
+    const { user } = req.user;  // Directly assign req.user to user
+
+    if (!user._id) {
+        return res.status(400).json({ error: true, message: "User ID not found in token" });
+    }
+
+    if (!title) return res.status(400).json({ error: true, message: "Title required" });
+    if (!content) return res.status(400).json({ error: true, message: "Content required" });
+
+    try {
+        const note = new Note({
+            title,
+            content,
+            tags: tags || [],
+            userId: user._id  // Now user._id should be accessible
+        });
+
+        await note.save();
+        return res.json({ error: false, note, message: "Note added successfully" });
+
+    } catch (error) {
+        console.error("Error saving note:", error); // Log the error for debugging
+        return res.status(500).json({ error: true, message: "Internal server error" });
+    }
+});
+
+
 
 app.listen(8000, () => {
     console.log('server running on port 8000!');
