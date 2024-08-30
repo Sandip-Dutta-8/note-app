@@ -24,10 +24,6 @@ app.use(
     })
 );
 
-app.get("/", (req, res) => {
-    res.json({ data: "hello" });
-})
-
 //create account
 app.post("/create-account", async (req, res) => {
     const {fullName, email, password } = req.body;
@@ -64,7 +60,7 @@ app.post("/create-account", async (req, res) => {
     })
 })
 
-//login route
+//login
 app.post("/login", async (req, res) => {
 
     const { email, password } = req.body;
@@ -169,7 +165,7 @@ app.put("/edit-note/:noteId", authenticateToken, async (req, res) => {
 })
 
 //get all note
-app.get("/get-all-note", authenticateToken, async (req, res) => {
+app.get("/get-all-notes", authenticateToken, async (req, res) => {
     const { user } = req.user;
 
     try {
@@ -181,7 +177,70 @@ app.get("/get-all-note", authenticateToken, async (req, res) => {
     }
 })
 
+//delete note
+app.delete("/delete-note/:noteId", authenticateToken, async (req, res) => {
+    const noteID = req.params.noteId;
+    const { user } = req.user;
 
+    try {
+        const note = await Note.findOne({_id: noteID, userId: user._id});
+
+        if(!note) return res.status(404).json({error: true, message: "Note not found"});
+
+        await Note.deleteOne({_id: noteID, userId: user._id });
+
+        return res.status(200).json({error: false, message: "note delete successfully"})
+
+    } catch (error) {
+        return res.status(400).json({error: true, message: "Internal server error"})
+    }
+})
+
+//update isPinned value
+app.put("/update-note-pinned/:noteId", authenticateToken, async(req, res) => {
+    const noteID = req.params.noteId;
+    const { isPinned } = req.body;
+    const { user } = req.user;
+
+    try {
+        const note = await Note.findOne({_id: noteID, userId: user._id})
+
+        if(!note) return res.status(404).json({error: true, message: "Note not found"})
+
+        note.isPinned = isPinned;
+
+        await note.save();
+
+        return res.status(200).json({
+            error: false,
+            note,
+            message: "Note edited successfully"
+        })
+        
+    } catch (error) {
+        return res.status(400).json({error: true, message: "Internal server error"})
+    }
+})
+
+//get user
+app.get("/get-user", authenticateToken, async (req, res) => {
+    const { user } = req.user;
+
+    const userInfo = await User.findOne({_id: user._id});
+
+    if(!userInfo) return res.sendStatus(401);
+
+    return res.status(200).json({
+        error: false,
+        user: {
+            fullName: userInfo.fullName,
+            email: userInfo.email,
+            _id: userInfo._id,
+            createdOn: userInfo.createdOn
+        },
+        message: "user fetch successfully"
+    })
+})
 
 app.listen(8000, () => {
     console.log('server running on port 8000!');
