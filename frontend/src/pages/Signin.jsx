@@ -31,8 +31,8 @@ const Signin = () => {
     <>
       <Navbar />
 
-      <div className='flex items-center justify-center mt-28'>
-        <div className='w-96 border rounded bg-white px-7 py-9'>
+      <div className='flex items-center justify-center mt-20 lg:mt-28'>
+        <div className='w-96 lg:border rounded bg-white px-7 py-9'>
           <form onSubmit={handleLogin}>
             <h4 className='text-2xl mb-7'>Sign In</h4>
 
@@ -56,7 +56,7 @@ const Signin = () => {
 
             <p className='text-sm mt-4 text-center'>
               Not register yet?{" "}
-              <Link to="/sign-up" className='text-blue-500 '>Create an account</Link>
+              <Link to="/sign-up" className='text-blue-500 underline'>Create an account</Link>
             </p>
           </form>
         </div>

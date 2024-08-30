@@ -28,7 +28,6 @@ const Passwordinput = ({ value, onChange, placeholder }) => {
                 className='text-slate-400 cursor-pointer'
                 onClick={() => togglePassword()}
             />}
-
         </div>
     )
 }
