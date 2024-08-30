@@ -1,30 +1,51 @@
 import React, { useState } from 'react'
 import Navbar from '../components/Navbar'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import Passwordinput from '../components/Passwordinput'
 import { validateEmail } from '../utils/helper'
+import axiosInstance from '../utils/axios'
 
 const Signin = () => {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
 
-    if(!validateEmail(email)){
+    if (!validateEmail(email)) {
       setError("Please enter a valid email address!")
       return
     }
 
-    if(!password){
+    if (!password) {
       setError("Please enter a password!")
       return
     }
 
     setError("");
 
+    //login api call
+    try {
+      const response = await axiosInstance.post("/login", {
+        email: email,
+        password: password
+      })
+
+      //handel successful login response
+      if (response.data && response.data.accessToken) {
+        localStorage.setItem("token", response.data.accessToken)
+        navigate('/dashboard')
+      }
+    } catch (error) {
+      if (error.response && error.response.data && error.response.data.message) {
+        setError(error.response.data.message)
+      } else {
+        setError("An unexpected error occur please try again")
+      }
+    }
   }
 
   return (
@@ -36,9 +57,9 @@ const Signin = () => {
           <form onSubmit={handleLogin}>
             <h4 className='text-2xl mb-7'>Sign In</h4>
 
-            <input 
-              type="text" 
-              placeholder='email' 
+            <input
+              type="text"
+              placeholder='email'
               className='input-box'
               value={email}
               onChange={(e) => setEmail(e.target.value)}
