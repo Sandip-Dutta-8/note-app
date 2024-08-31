@@ -9,6 +9,7 @@ const Navbar = ({ userInfo }) => {
   const navigate = useNavigate();
 
   const onLogout = () => {
+    localStorage.clear();
     navigate('/sign-in');
   }
 
@@ -31,7 +32,7 @@ const Navbar = ({ userInfo }) => {
         onClearSearch={onClearSearch}
       />
 
-      <Profileinfo userInfo={userInfo} onLogout={onLogout} />
+      {userInfo? <Profileinfo userInfo={userInfo} onLogout={onLogout} /> : ""}
     </div>
   )
 }

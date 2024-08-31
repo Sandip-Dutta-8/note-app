@@ -6,6 +6,7 @@ import AddeditNote from '../components/AddeditNote'
 import Modal from 'react-modal'
 import { useNavigate } from 'react-router-dom'
 import axiosInstance from '../utils/axios'
+import moment from "moment"
 
 const Home = () => {
 
@@ -15,6 +16,7 @@ const Home = () => {
     data: null,
   })
 
+  const [allNotes, setAllNotes] = useState([])
   const [userInfo, setUserInfo] = useState(null)
   const navigate = useNavigate();
 
@@ -26,44 +28,58 @@ const Home = () => {
         setUserInfo(response.data.user)
       }
     } catch (error) {
-      if( error.response.status === 401){
+      if (error.response.status === 401) {
         localStorage.clear();
         navigate("/sign-in")
       }
     }
   }
 
-  useEffect(()=>{
+  //get all notes
+  const getAllNotes = async () => {
+    try {
+      const response = await axiosInstance.get("/get-all-notes");
+      if (response.data && response.data.allNote) {
+        setAllNotes(response.data.allNote);
+      }
+    } catch (error) {
+      console.log("An unexpected error occurred");
+    }
+  }
+
+  // Use useEffect to log when allNotes is updated
+  // useEffect(() => {
+  //   if (allNotes.length > 0) {
+  //     console.log(allNotes);
+  //   }
+  // }, [allNotes]); // This runs every time `allNotes` is updated
+
+  useEffect(() => {
+    getAllNotes();
     getUserInfo();
-    return () => {};
+    return () => { };
   }, [])
+
 
   return (
     <>
-      <Navbar userInfo={userInfo}/>
+      <Navbar userInfo={userInfo} />
 
       <div className='container mx-auto'>
-        <div className='grid grig-cols-1 lg:grid-cols-3 gap-4 mt-10 mx-10'>
-          <Notecard
-            title={"Do coding"}
-            date={"24th aug"}
-            tags={"#coding"}
-            content={"Do coding daily atleast 1hr. Web dev and solve DSA questions from the stiver sheet"}
-            isPinned={true}
-            onDelete={() => { }}
-            onEdit={() => { }}
-            onPinNote={() => { }}
-          />
-          <Notecard
-            title={"Do coding"}
-            date={"24th aug"}
-            tags={"#coding"}
-            content={"Do coding daily atleast 1hr. Web dev and solve DSA questions from the stiver sheet"}
-            isPinned={true}
-            onDelete={() => { }}
-            onEdit={() => { }}
-            onPinNote={() => { }}
-          />
+        <div className='grid grid-cols-1 lg:grid-cols-3 gap-4 mt-10 mx-10'>
+          {allNotes.map((value, index) => (
+            <Notecard
+              key={value._id}
+              title={value.title}
+              date={moment(value.createdOn).format('Do MMM YYYY')}
+              tags={value.tags}
+              content={value.content}
+              isPinned={value.isPinned}
+              onDelete={() => { }}
+              onEdit={() => { }}
+              onPinNote={() => { }}
+            />
+          ))}
         </div>
       </div>
 
