@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import Profileinfo from './Profileinfo'
 import { useNavigate } from 'react-router-dom'
 import Searchbar from './Searchbar';
+import toast from 'react-hot-toast';
 
 const Navbar = ({ userInfo }) => {
 
@@ -11,6 +12,7 @@ const Navbar = ({ userInfo }) => {
   const onLogout = () => {
     localStorage.clear();
     navigate('/sign-in');
+    toast.success("Account Logout")
   }
 
   const handelSearch = () => {

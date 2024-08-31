@@ -1,23 +1,62 @@
 import React, { useState } from 'react'
 import Taginput from './Taginput'
 import { MdClose } from 'react-icons/md';
+import axiosInstance from '../utils/axios';
+import toast from 'react-hot-toast';
 
-const AddeditNote = ({ setOpenModal, noteData, type }) => {
+const AddeditNote = ({ noteData, type, getAllNotes, onClose }) => {
 
-    const [title, setTitle] = useState("");
-    const [content, setContent] = useState("");
-    const [tags, setTags] = useState([]);
+    const [title, setTitle] = useState(noteData?.title || "");
+    const [content, setContent] = useState(noteData?.content || "");
+    const [tags, setTags] = useState(noteData?.tags || []);
     const [error, setError] = useState(null);
 
-    const onClose = () => {
-        setOpenModal({ isShown: false, type: 'add', data: null })
+    //ADD NOTE
+    const addNewNote = async () => {
+        try {
+            const response = await axiosInstance.post("/add-note", {
+                title: title,
+                content: content,
+                tags: tags
+            })
+
+            if(response.data && response.data.note){
+                getAllNotes();
+                onClose();
+                toast.success('Note Added')
+            }
+
+        } catch (error) {
+            if(error.response && error.response.data && error.response.data.message){
+                setError(error.response.data.message);
+                toast.error('Error')
+            }
+        }
     }
 
-    //ADD NOTE
-    const addNewNote = async () => {}
-
     //EDIT NOTE
-    const editNote = async () => {}
+    const editNote = async () => {
+        const noteId = noteData._id;
+        try {
+            const response = await axiosInstance.put("/edit-note/" + noteId, {
+                title: title,
+                content: content,
+                tags: tags
+            })
+
+            if(response.data && response.data.note){
+                getAllNotes();
+                onClose();
+                toast.success('Note Updated')
+            }
+
+        } catch (error) {
+            if(error.response && error.response.data && error.response.data.message){
+                setError(error.response.data.message);
+                toast.error('Not Updated')
+            }
+        }
+    }
 
     const handelAddNote = () => {
         if(!title){
@@ -76,7 +115,7 @@ const AddeditNote = ({ setOpenModal, noteData, type }) => {
             </div>
             {error && <p className='text-red-500 text-sm pt-4'>{error}</p>}
             <button className='btn-primary font-medium mt-4 p-3' onClick={handelAddNote}>
-                ADD
+                {type === "edit" ? 'UPDATE' : 'ADD'}
             </button>
         </div>
     )

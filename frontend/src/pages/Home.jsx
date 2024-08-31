@@ -7,6 +7,8 @@ import Modal from 'react-modal'
 import { useNavigate } from 'react-router-dom'
 import axiosInstance from '../utils/axios'
 import moment from "moment"
+import toast from 'react-hot-toast'
+import EmptyCard from '../components/EmptyCard'
 
 const Home = () => {
 
@@ -19,6 +21,11 @@ const Home = () => {
   const [allNotes, setAllNotes] = useState([])
   const [userInfo, setUserInfo] = useState(null)
   const navigate = useNavigate();
+
+  //close modal
+  const onClose = () => {
+    setOpenModal({ isShown: false, type: 'add', data: null })
+  }
 
   //get user info
   const getUserInfo = async () => {
@@ -47,6 +54,28 @@ const Home = () => {
     }
   }
 
+  //delete note
+  const deleteNote = async (data) => {
+    try {
+      const noteId = data._id;
+      const response = await axiosInstance.delete("/delete-note/" + noteId)
+
+      if (response.data && !response.data.error) {
+        getAllNotes();
+        toast.success('Note Deleted')
+      }
+
+    } catch (error) {
+      if (error.response && error.response.data && error.response.data.message) {
+        console.log("An unexpected error occurred")
+        toast.error('Error')
+      }
+    }
+  }
+  const handelEdit = (noteDetails) => {
+    setOpenModal({ isShown: true, type: 'edit', data: noteDetails })
+  }
+
   // Use useEffect to log when allNotes is updated
   // useEffect(() => {
   //   if (allNotes.length > 0) {
@@ -66,7 +95,7 @@ const Home = () => {
       <Navbar userInfo={userInfo} />
 
       <div className='container mx-auto'>
-        <div className='grid grid-cols-1 lg:grid-cols-3 gap-4 mt-10 mx-10'>
+        {allNotes.length > 0 ? <div className='grid grid-cols-1 lg:grid-cols-3 gap-4 mt-10 mx-10'>
           {allNotes.map((value, index) => (
             <Notecard
               key={value._id}
@@ -75,12 +104,12 @@ const Home = () => {
               tags={value.tags}
               content={value.content}
               isPinned={value.isPinned}
-              onDelete={() => { }}
-              onEdit={() => { }}
+              onDelete={() => { deleteNote(value) }}
+              onEdit={() => { handelEdit(value) }}
               onPinNote={() => { }}
             />
           ))}
-        </div>
+        </div> : <EmptyCard />}
       </div>
 
       <button className='w-10 h-10 lg:w-16 lg:h-16 flex items-center justify-center bg-primary rounded-full hover:bg-blue-600 fixed right-6 lg:right-10 bottom-10 z-auto'
@@ -93,7 +122,7 @@ const Home = () => {
       <Modal
         isOpen={openModal.isShown}
         ariaHideApp={false}
-        onRequestClose={() => { setOpenModal({ isShown: false, type: 'add', data: null }) }}
+        onRequestClose={() => { }}
         style={{
           overlay: {
             backgroundColor: "rgba(0, 0, 0, 0.3)",
@@ -105,7 +134,8 @@ const Home = () => {
         <AddeditNote
           type={openModal.type}
           noteData={openModal.data}
-          setOpenModal={setOpenModal}
+          onClose={onClose}
+          getAllNotes={getAllNotes}
         />
       </Modal>
     </>

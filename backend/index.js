@@ -126,7 +126,7 @@ app.post("/add-note", authenticateToken, async (req, res) => {
 
     } catch (error) {
         console.error("Error saving note:", error); // Log the error for debugging
-        return res.status(500).json({ error: true, message: "Internal server error" });
+        return res.status(401).json({ error: true, message: "Internal server error" });
     }
 });
 
