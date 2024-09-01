@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import Searchbar from './Searchbar';
 import toast from 'react-hot-toast';
 
-const Navbar = ({ userInfo }) => {
+const Navbar = ({ userInfo, searchNote, handelClearSearch }) => {
 
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
@@ -16,11 +16,14 @@ const Navbar = ({ userInfo }) => {
   }
 
   const handelSearch = () => {
-
+    if(searchQuery){
+      searchNote(searchQuery)
+    }
   }
 
   const onClearSearch = () => {
     setSearchQuery("");
+    handelClearSearch();
   }
 
   return (

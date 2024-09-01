@@ -242,6 +242,29 @@ app.get("/get-user", authenticateToken, async (req, res) => {
     })
 })
 
+//Search Notes
+app.get("/search-notes/", authenticateToken, async (req, res) => {
+    const { user } = req.user;
+    const { query } = req.query;
+
+    if(!query) return res.status(400).json({error: true, message: "Search query is empty"})
+    
+    try {
+        const matchingNote = await Note.find({
+            userId: user._id,
+            $or: [
+                { title: {$regex: new RegExp(query, "i")}},
+                { content: {$regex: new RegExp(query, "i")}}
+            ]
+        })
+
+        return res.status(200).json({error: false, matchingNote, message: "Search successful"})
+
+    } catch (error) {
+        return res.status(400).json({error: true, message: "internal server error"})
+    }
+})
+
 app.listen(8000, () => {
     console.log('server running on port 8000!');
 })

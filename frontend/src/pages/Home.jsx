@@ -9,6 +9,8 @@ import axiosInstance from '../utils/axios'
 import moment from "moment"
 import toast from 'react-hot-toast'
 import EmptyCard from '../components/EmptyCard'
+import NoteIMG from '../../public/note.png'
+import NoDataImg from '../../public/nodata.png'
 
 const Home = () => {
 
@@ -20,6 +22,7 @@ const Home = () => {
 
   const [allNotes, setAllNotes] = useState([])
   const [userInfo, setUserInfo] = useState(null)
+  const [isSearch, setIsSearch] = useState(false);
   const navigate = useNavigate();
 
   //close modal
@@ -72,8 +75,51 @@ const Home = () => {
       }
     }
   }
+
   const handelEdit = (noteDetails) => {
     setOpenModal({ isShown: true, type: 'edit', data: noteDetails })
+  }
+
+  //Search note
+  const searchNote = async (query) => {
+    try {
+      const response = await axiosInstance.get("/search-notes/", {
+        params: { query },
+      });
+
+      if (response.data && response.data.matchingNote) {
+        setIsSearch(true);
+        setAllNotes(response.data.matchingNote)
+      }
+
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  const handelClearSearch = () => {
+    setIsSearch(false);
+    getAllNotes();
+  }
+
+  //update note pin
+  const OnUpdatePin = async (noteData) => {
+    const noteId = noteData._id;
+    try {
+      const response = await axiosInstance.put("/update-note-pinned/" + noteId, {
+        isPinned: !noteData.isPinned
+      })
+
+      if (response.data && response.data.note) {
+        getAllNotes();
+        onClose();
+        {!noteData.isPinned ? toast.success('Note Pinned') : toast.success('Note Unpinned')};
+      }
+
+    } catch (error) {
+      console.log(error);
+      
+    }
   }
 
   // Use useEffect to log when allNotes is updated
@@ -92,7 +138,7 @@ const Home = () => {
 
   return (
     <>
-      <Navbar userInfo={userInfo} />
+      <Navbar userInfo={userInfo} searchNote={searchNote} handelClearSearch={handelClearSearch} />
 
       <div className='container mx-auto'>
         {allNotes.length > 0 ? <div className='grid grid-cols-1 lg:grid-cols-3 gap-4 mt-10 mx-10'>
@@ -106,10 +152,13 @@ const Home = () => {
               isPinned={value.isPinned}
               onDelete={() => { deleteNote(value) }}
               onEdit={() => { handelEdit(value) }}
-              onPinNote={() => { }}
+              onPinNote={() => OnUpdatePin(value)}
             />
           ))}
-        </div> : <EmptyCard />}
+        </div> : <EmptyCard
+          NoteIMG={isSearch ? NoDataImg : NoteIMG}
+          message={isSearch ? "Oops! no data found matching your search" : "Start creating your first NOTE! Click the '+' icon to jot down your thoughts, ideas and reminders. Let's get started!"}
+        />}
       </div>
 
       <button className='w-10 h-10 lg:w-16 lg:h-16 flex items-center justify-center bg-primary rounded-full hover:bg-blue-600 fixed right-6 lg:right-10 bottom-10 z-auto'
