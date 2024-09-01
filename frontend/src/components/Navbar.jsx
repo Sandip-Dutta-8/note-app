@@ -30,12 +30,12 @@ const Navbar = ({ userInfo, searchNote, handelClearSearch }) => {
     <div className='bg-white flex items-center justify-between py-3 px-3 gap-3 drop-shadow lg:px-12'>
       <h2 className='text-black font-medium text-xl lg:text-2xl py-2'>Notes</h2>
 
-      <Searchbar 
+      {userInfo ? <Searchbar 
         value={searchQuery}
         onChange={({target}) => setSearchQuery(target.value)}
         handelSearch={handelSearch}
         onClearSearch={onClearSearch}
-      />
+      /> : ""}
 
       {userInfo? <Profileinfo userInfo={userInfo} onLogout={onLogout} /> : ""}
     </div>
